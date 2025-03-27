@@ -1,34 +1,34 @@
 /* eslint-disable @typescript-eslint/require-await */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import { InMemoryNotificationRepository } from '../../../test/repositories/in-memory-notifications-repository';
-import { CancelNotification } from './cancel-notification';
 import { NotificationNotFound } from './errors/notification-not-found';
 import { makeNotification } from '@test/factories/notification-factory';
+import { UnreadNotification } from './unread-notification';
 
-describe('cancel notification', () => {
-  it('should be able to send notification', async () => {
+describe('Unread notification', () => {
+  it('should be able to unread notification', async () => {
     const notificationsRepository = new InMemoryNotificationRepository();
-    const cancelNotification = new CancelNotification(notificationsRepository);
+    const unreadNotification = new UnreadNotification(notificationsRepository);
 
-    const notification = makeNotification();
+    const notification = makeNotification({
+      readAt: new Date(),
+    });
 
     await notificationsRepository.create(notification);
 
-    await cancelNotification.execute({
+    await unreadNotification.execute({
       notificationId: notification.id,
     });
 
-    expect(notificationsRepository.notifications[0].canceledAt).toEqual(
-      expect.any(Date),
-    );
+    expect(notificationsRepository.notifications[0].readAt).toBeNull();
   });
 
-  it('should not be able to cancel a non existing notification', async () => {
+  it('should not be able to urread a non existing notification', async () => {
     const notificationsRepository = new InMemoryNotificationRepository();
-    const cancelNotification = new CancelNotification(notificationsRepository);
+    const unreadNotification = new UnreadNotification(notificationsRepository);
 
     expect(() => {
-      return cancelNotification.execute({
+      return unreadNotification.execute({
         notificationId: 'fake-notification-id',
       });
     }).rejects.toThrow(NotificationNotFound);
